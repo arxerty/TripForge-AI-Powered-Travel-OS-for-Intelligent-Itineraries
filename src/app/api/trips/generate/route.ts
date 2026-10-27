@@ -1,43 +1,54 @@
 import { NextResponse } from "next/server";
-import { generateTripItinerary } from "@/lib/ai/provider";
+import { randomUUID } from "crypto";
+import { configuredProvider, generateTripItinerary } from "@/lib/ai/provider";
+import { generateDemoTrip } from "@/lib/ai/demo";
+import { geocode } from "@/lib/geo/geocode";
+import { ensureOwnerId } from "@/lib/trips/owner";
+import { saveTrip } from "@/lib/trips/store";
+import { TripInputSchema, type StoredTrip, type TripSource } from "@/lib/trips/types";
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    
-    // In a real app, we would validate `body` with Zod before proceeding
-    const { 
-      destination, 
-      startDate, 
-      endDate, 
-      budgetAmount, 
-      travelStyle, 
-      interests 
-    } = body;
-
-    if (!destination || !startDate || !endDate || !budgetAmount) {
-      return NextResponse.json(
-        { error: "Missing required fields." },
-        { status: 400 }
-      );
-    }
-
-    const tripData = await generateTripItinerary({
-      destination,
-      startDate,
-      endDate,
-      budgetAmount,
-      travelStyle,
-      interests,
-      providerName: process.env.GEMINI_API_KEY ? "gemini" : "openai", // fallback logic
-    });
-
-    return NextResponse.json({ success: true, trip: tripData });
-  } catch (error: any) {
-    console.error("[TRIP_GENERATE_ERROR]", error);
+  const parsed = TripInputSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Failed to generate the trip itinerary." },
-      { status: 500 }
+      { error: "invalid_input", issues: parsed.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })) },
+      { status: 400 }
     );
   }
+  const input = parsed.data;
+
+  const geo = await geocode(input.destination, input.language);
+  if (!geo.ok) {
+    return geo.reason === "not_found"
+      ? NextResponse.json({ error: "destination_not_found" }, { status: 422 })
+      : NextResponse.json({ error: "geocoding_unavailable" }, { status: 503 });
+  }
+  const { location } = geo;
+
+  const provider = configuredProvider();
+  let source: TripSource = "demo";
+  let plan = null;
+  if (provider) {
+    try {
+      plan = await generateTripItinerary(input, location, provider);
+      source = "ai";
+    } catch (error) {
+      // Keep the user moving: fall back to the offline planner and say so in the UI.
+      console.error("[TRIP_GENERATE_ERROR]", error);
+    }
+  }
+  plan ??= generateDemoTrip(input, location);
+
+  const trip: StoredTrip = {
+    id: randomUUID(),
+    ownerId: await ensureOwnerId(),
+    source,
+    createdAt: new Date().toISOString(),
+    input,
+    location,
+    plan,
+  };
+  await saveTrip(trip);
+
+  return NextResponse.json({ id: trip.id, source });
 }

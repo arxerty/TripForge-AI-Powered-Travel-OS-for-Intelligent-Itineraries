@@ -1,34 +1,31 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { Language, translations } from "./translations";
+import React, { createContext, useContext, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Language, translations, translate, LANG_COOKIE } from "./translations";
 
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("tripforge_lang") as Language;
-    if (saved && translations[saved]) {
-      setLanguageState(saved);
-    }
-  }, []);
+export function I18nProvider({ children, initialLanguage }: { children: React.ReactNode; initialLanguage: Language }) {
+  const router = useRouter();
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
 
   const setLanguage = (lang: Language) => {
+    if (!translations[lang]) return;
     setLanguageState(lang);
-    localStorage.setItem("tripforge_lang", lang);
+    // Cookie so server-rendered pages and new AI itineraries use the same language.
+    document.cookie = `${LANG_COOKIE}=${lang}; path=/; max-age=31536000; samesite=lax`;
+    document.documentElement.lang = lang;
+    router.refresh();
   };
 
-  const t = (key: string): string => {
-    return translations[language]?.[key] || translations["en"]?.[key] || key;
-  };
+  const t = (key: string, vars?: Record<string, string | number>) => translate(language, key, vars);
 
   return (
     <I18nContext.Provider value={{ language, setLanguage, t }}>

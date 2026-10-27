@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { I18nProvider } from "@/lib/i18n/context";
+import { getServerLanguage } from "@/lib/i18n/server";
+import { THEME_COOKIE, type Theme } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
 });
 
 const geistMono = Geist_Mono({
@@ -30,16 +34,18 @@ export const metadata: Metadata = {
   },
 };
 
-import { I18nProvider } from "@/lib/i18n/context";
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [language, cookieStore] = await Promise.all([getServerLanguage(), cookies()]);
+  const theme: Theme = cookieStore.get(THEME_COOKIE)?.value === "light" ? "light" : "dark";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang={language}
+      className={`${geistSans.variable} ${geistMono.variable} ${theme} h-full antialiased`}
+      style={{ colorScheme: theme }}
     >
       <body className="min-h-full flex flex-col">
-        <I18nProvider>
+        <I18nProvider initialLanguage={language}>
           {children}
         </I18nProvider>
       </body>

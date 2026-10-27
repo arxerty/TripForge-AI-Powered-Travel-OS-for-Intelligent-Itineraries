@@ -1,11 +1,11 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/context";
-import { LANGUAGE_OPTIONS, Language } from "@/lib/i18n/translations";
+import { LANGUAGE_OPTIONS } from "@/lib/i18n/translations";
 import { Globe } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-export function LanguageSelector() {
+export function LanguageSelector({ placement = "down" }: { placement?: "down" | "up" }) {
   const { language, setLanguage } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,11 @@ export function LanguageSelector() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          className={`absolute w-44 bg-popover border border-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in duration-200 ${
+            placement === "up" ? "left-0 bottom-full mb-2 slide-in-from-bottom-2" : "right-0 mt-2 slide-in-from-top-2"
+          }`}
+        >
           {LANGUAGE_OPTIONS.map((opt) => (
             <button
               key={opt.code}

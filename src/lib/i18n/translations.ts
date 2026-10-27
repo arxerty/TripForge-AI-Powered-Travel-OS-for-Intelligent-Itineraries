@@ -1,3 +1,5 @@
+import { messages } from "./messages";
+
 export type Language = "en" | "ru" | "es" | "fr" | "de" | "it" | "ja" | "zh" | "ko" | "pt";
 
 export interface LanguageOption {
@@ -371,3 +373,16 @@ export const translations: Record<Language, Record<string, string>> = {
     tickets: "Ingressos",
   },
 };
+
+export const LANG_COOKIE = "tripforge_lang";
+
+/** Looks up a key in the core dictionary, then the app messages, falling back to English. */
+export function translate(language: Language, key: string, vars?: Record<string, string | number>) {
+  const text =
+    translations[language]?.[key] ??
+    messages[language]?.[key] ??
+    translations.en[key] ??
+    messages.en[key] ??
+    key;
+  return vars ? text.replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? `{${name}}`)) : text;
+}

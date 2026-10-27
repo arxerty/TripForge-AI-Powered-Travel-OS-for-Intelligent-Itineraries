@@ -9,6 +9,9 @@
 # production
 /build
 
+# local trip store (demo mode)
+/.data/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
