@@ -1,20 +1,20 @@
 "use client";
 
-import { PieChart, Wallet, TrendingUp, AlertCircle, Plane, Hotel, Navigation, Utensils, Activity, ShoppingBag, MoreHorizontal } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, Plane, BedDouble, Navigation, Utensils, Ticket, ShoppingBag, MoreHorizontal } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 import { formatMoney } from "@/lib/format";
 import type { GeneratedTrip } from "@/lib/validation/trip.schema";
 import { cn } from "@/lib/utils";
 
+// Apple system colours, one per category (like Screen Time / Wallet breakdowns).
 const CATEGORIES = [
-  { key: "flights", label: "catFlights", icon: Plane, color: "bg-sky-500" },
-  { key: "hotels", label: "catHotels", icon: Hotel, color: "bg-indigo-500" },
-  { key: "food", label: "catFood", icon: Utensils, color: "bg-orange-500" },
-  { key: "transport", label: "catTransport", icon: Navigation, color: "bg-emerald-500" },
-  { key: "activities", label: "catActivities", icon: Activity, color: "bg-pink-500" },
-  { key: "shopping", label: "catShopping", icon: ShoppingBag, color: "bg-purple-500" },
-  { key: "other", label: "catOther", icon: MoreHorizontal, color: "bg-zinc-500" },
+  { key: "flights", label: "catFlights", icon: Plane, color: "bg-sys-blue" },
+  { key: "hotels", label: "catHotels", icon: BedDouble, color: "bg-sys-indigo" },
+  { key: "food", label: "catFood", icon: Utensils, color: "bg-sys-orange" },
+  { key: "transport", label: "catTransport", icon: Navigation, color: "bg-sys-green" },
+  { key: "activities", label: "catActivities", icon: Ticket, color: "bg-sys-pink" },
+  { key: "shopping", label: "catShopping", icon: ShoppingBag, color: "bg-sys-purple" },
+  { key: "other", label: "catOther", icon: MoreHorizontal, color: "bg-sys-gray" },
 ] as const;
 
 interface BudgetViewProps {
@@ -29,90 +29,63 @@ export default function BudgetView({ budgetAmount, currency, estimate }: BudgetV
   const total = estimate.totalEstimated;
   const remaining = budgetAmount - total;
   const percentage = budgetAmount > 0 ? (total / budgetAmount) * 100 : 0;
-  const maxCategory = Math.max(1, ...CATEGORIES.map((c) => estimate.breakdown[c.key]));
 
   return (
     <div className="space-y-6">
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card size="sm" className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t("yourBudget")}</CardTitle>
-            <Wallet className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold tabular-nums">{money(budgetAmount)}</div>
-          </CardContent>
-        </Card>
+      {/* Summary */}
+      <div className="grouped p-5">
+        <p className="text-[13px] text-muted-foreground mb-1">{t("estimated")}</p>
+        <div className="flex items-baseline justify-between gap-3 mb-4">
+          <span className="text-[34px] font-bold tracking-tight tabular-nums leading-none">{money(total)}</span>
+          <span className="text-[13px] text-muted-foreground">
+            {t("yourBudget")}: <span className="text-foreground font-medium tabular-nums">{money(budgetAmount)}</span>
+          </span>
+        </div>
 
-        <Card size="sm" className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t("estimated")}</CardTitle>
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold tabular-nums">{money(total)}</div>
-            <div className="w-full bg-secondary h-2 rounded-full mt-3 overflow-hidden">
-              <div
-                className={cn("h-full rounded-full", percentage > 100 ? "bg-destructive" : percentage > 90 ? "bg-amber-500" : "bg-primary")}
-                style={{ width: `${Math.min(percentage, 100)}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Stacked bar, like Screen Time */}
+        <div className="flex h-2.5 w-full rounded-full overflow-hidden bg-secondary gap-[2px]">
+          {CATEGORIES.map((cat) => {
+            const value = estimate.breakdown[cat.key];
+            const width = (value / Math.max(total, budgetAmount)) * 100;
+            return width > 0 ? <div key={cat.key} className={cat.color} style={{ width: `${width}%` }} /> : null;
+          })}
+        </div>
 
-        <Card size="sm" className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{remaining < 0 ? t("overBudget") : t("remaining")}</CardTitle>
-            <PieChart className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={cn("text-xl font-bold tabular-nums", remaining < 0 && "text-destructive")}>
-              {money(Math.abs(remaining))}
-            </div>
-          </CardContent>
-        </Card>
+        <p className={cn("mt-3 text-[15px] font-medium", remaining < 0 ? "text-destructive" : "text-sys-green")}>
+          {remaining < 0 ? t("overBudget") : t("remaining")}: <span className="tabular-nums">{money(Math.abs(remaining))}</span>
+        </p>
       </div>
 
       {/* Alerts */}
       {percentage > 90 && (
-        <div role="status" className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+        <div role="status" className="grouped p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-sys-orange shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-destructive">{t("budgetWarning")}</h4>
-            <p className="text-sm text-destructive/80">{t("budgetWarningText")}</p>
+            <h4 className="font-semibold text-[15px]">{t("budgetWarning")}</h4>
+            <p className="text-[13px] text-muted-foreground">{t("budgetWarningText")}</p>
           </div>
         </div>
       )}
 
-      {/* Category Breakdown */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-base">{t("expensesByCategory")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {/* Category Breakdown — inset grouped list */}
+      <section>
+        <h3 className="px-4 mb-1.5 text-[13px] uppercase tracking-wide text-muted-foreground">{t("expensesByCategory")}</h3>
+        <div className="grouped">
           {CATEGORIES.map((cat) => {
             const value = estimate.breakdown[cat.key];
             return (
-              <div key={cat.key} className="flex items-center gap-3">
-                <div className="size-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <cat.icon className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="font-medium">{t(cat.label)}</span>
-                    <span className="font-semibold tabular-nums">{money(value)}</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                    <div className={cn("h-full rounded-full", cat.color)} style={{ width: `${(value / maxCategory) * 100}%` }} />
-                  </div>
-                </div>
+              <div key={cat.key} className="grouped-row">
+                <span className={cn("size-[29px] rounded-[7px] flex items-center justify-center text-white shrink-0", cat.color)}>
+                  <cat.icon className="w-4 h-4" strokeWidth={2.2} />
+                </span>
+                <span className="flex-1 text-[15px]">{t(cat.label)}</span>
+                <span className="text-[15px] text-muted-foreground tabular-nums">{money(value)}</span>
               </div>
             );
           })}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
     </div>
   );

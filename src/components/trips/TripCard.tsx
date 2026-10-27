@@ -15,8 +15,8 @@ export function TripStatusPill({ trip, className }: { trip: PublicTrip; classNam
   return (
     <span
       className={cn(
-        "px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap",
-        status === "ongoing" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : status === "past" ? "bg-secondary text-muted-foreground" : "bg-accent text-accent-foreground",
+        "px-2.5 h-6 inline-flex items-center text-[12px] font-semibold rounded-full whitespace-nowrap",
+        status === "ongoing" ? "bg-sys-green/15 text-sys-green" : status === "past" ? "bg-secondary text-muted-foreground" : "bg-primary/10 text-primary",
         className
       )}
     >
@@ -32,16 +32,18 @@ export function TripCard({ trip }: { trip: PublicTrip }) {
   return (
     <Link
       href={`/trips/${trip.id}`}
-      className="group block overflow-hidden rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group block overflow-hidden rounded-2xl bg-card shadow-card transition-transform duration-300 hover:scale-[1.015] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/30"
     >
-      <div className="h-28 relative overflow-hidden" style={{ background: coverGradient(trip.input.destination) }}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.25),transparent_55%)] transition-transform duration-500 group-hover:scale-110" />
-        <span className="absolute bottom-3 left-4 text-white/95 text-2xl font-bold tracking-tight drop-shadow">{trip.location.name}</span>
-        <TripStatusPill trip={trip} className="absolute top-3 right-3 bg-black/35 text-white dark:text-white backdrop-blur-md" />
+      <div className="h-36 relative overflow-hidden" style={{ background: coverGradient(trip.input.destination) }}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,255,255,0.35),transparent_55%)]" />
+        <span className="absolute bottom-3 left-4 right-4 text-white text-[28px] leading-tight font-bold tracking-tight drop-shadow-sm truncate">
+          {trip.location.name}
+        </span>
+        <TripStatusPill trip={trip} className="absolute top-3 right-3 bg-white/25 text-white backdrop-blur-md" />
       </div>
-      <div className="p-4 space-y-1.5">
-        <h3 className="font-semibold leading-tight truncate">{trip.plan.tripTitle}</h3>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <div className="px-4 py-3.5 space-y-1">
+        <h3 className="font-semibold text-[15px] leading-tight truncate">{trip.plan.tripTitle}</h3>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {formatDateRange(trip.input.startDate, trip.input.endDate, language)}</span>
           <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {t("daysCount", { n: nDays })}</span>
           <span className="tabular-nums">{formatMoney(trip.plan.estimatedBudget.totalEstimated, trip.input.budgetCurrency, language)}</span>

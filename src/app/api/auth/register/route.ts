@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         email: user.email,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[REGISTER_ERROR]", error);
     return NextResponse.json(
       { error: "Failed to register user account." },

@@ -1,20 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+// SF Pro is used on Apple devices; Inter is the closest open substitute elsewhere.
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
 import { I18nProvider } from "@/lib/i18n/context";
 import { getServerLanguage } from "@/lib/i18n/server";
 import { THEME_COOKIE, type Theme } from "@/lib/theme";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin", "cyrillic"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "TripForge | AI Travel Planner",
@@ -41,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang={language}
-      className={`${geistSans.variable} ${geistMono.variable} ${theme} h-full antialiased`}
+      className={`${inter.variable} ${theme} h-full antialiased`}
       style={{ colorScheme: theme }}
     >
       <body className="min-h-full flex flex-col">

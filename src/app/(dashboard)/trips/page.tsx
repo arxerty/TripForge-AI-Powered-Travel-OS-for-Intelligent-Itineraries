@@ -15,15 +15,15 @@ export default async function TripsPage() {
   const past = trips.filter((trip) => tripStatus(trip) === "past").reverse();
 
   return (
-    <div className="flex-1 overflow-auto p-6 md:p-10">
-      <div className="max-w-6xl mx-auto space-y-10">
-        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div className="flex-1 overflow-auto px-5 py-6 md:px-10 md:py-10">
+      <div className="max-w-5xl mx-auto space-y-10">
+        <header className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{t("myTrips")}</h1>
-            <p className="text-muted-foreground text-lg">{t("tripsCount", { n: trips.length })}</p>
+            <h1 className="large-title">{t("myTrips")}</h1>
+            <p className="text-muted-foreground text-[15px] mt-1">{t("tripsCount", { n: trips.length })}</p>
           </div>
-          <Link href="/trips/create" className={buttonVariants({ size: "lg", className: "rounded-full gap-2 h-11 px-5" })}>
-            <Plus className="w-5 h-5" /> {t("createTrip")}
+          <Link href="/trips/create" className={buttonVariants()}>
+            <Plus className="w-4 h-4" strokeWidth={2.5} /> <span className="hidden sm:inline">{t("createTrip")}</span>
           </Link>
         </header>
 
@@ -33,7 +33,7 @@ export default async function TripsPage() {
           <>
             {upcoming.length > 0 && (
               <section>
-                <h2 className="text-xl font-semibold mb-4">{t("upcomingTrips")}</h2>
+                <h2 className="text-[22px] font-bold mb-3">{t("upcomingTrips")}</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {upcoming.map((trip) => <TripCard key={trip.id} trip={trip} />)}
                 </div>
@@ -41,7 +41,7 @@ export default async function TripsPage() {
             )}
             {past.length > 0 && (
               <section>
-                <h2 className="text-xl font-semibold mb-4">{t("pastTrips")}</h2>
+                <h2 className="text-[22px] font-bold mb-3">{t("pastTrips")}</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {past.map((trip) => <TripCard key={trip.id} trip={trip} />)}
                 </div>

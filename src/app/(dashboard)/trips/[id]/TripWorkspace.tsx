@@ -4,14 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  MapPin, Navigation, Calendar, Clock, Footprints, Trash2, Sparkles, FlaskConical,
+  MapPin, Navigation, Calendar, Clock, Footprints, Trash2, Sparkles, FlaskConical, ChevronLeft,
   Utensils, Landmark, TrainFront, ShoppingBag, Martini, Trees, CircleDot,
   Sun, Cloud, CloudRain, CloudSnow, CloudLightning, type LucideIcon,
 } from "lucide-react";
 import MapWrapper from "@/components/map/MapWrapper";
 import type { MarkerData } from "@/components/map/TripMap";
 import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BudgetView from "@/components/budget/BudgetView";
 import { useI18n } from "@/lib/i18n/context";
@@ -23,6 +22,12 @@ import { cn } from "@/lib/utils";
 export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Food: Utensils, Attraction: Landmark, Transport: TrainFront, Shopping: ShoppingBag,
   Nightlife: Martini, Nature: Trees, Other: CircleDot,
+};
+
+/** Apple system colour per activity category (icon tiles, like Maps / Settings). */
+export const CATEGORY_COLORS: Record<string, string> = {
+  Food: "bg-sys-orange", Attraction: "bg-sys-blue", Transport: "bg-sys-teal", Shopping: "bg-sys-purple",
+  Nightlife: "bg-sys-indigo", Nature: "bg-sys-green", Other: "bg-sys-gray",
 };
 
 const WEATHER_ICONS: Record<WeatherCondition, LucideIcon> = {
@@ -81,36 +86,39 @@ export default function TripWorkspace({ trip, weather }: { trip: PublicTrip; wea
     <div className="flex-1 flex flex-col md:flex-none md:flex-row md:h-screen md:overflow-hidden">
 
       {/* Sidebar */}
-      <div className="w-full md:w-[460px] lg:w-[520px] md:border-r border-border bg-background flex flex-col md:h-full z-10">
+      <div className="w-full md:w-[440px] lg:w-[500px] md:border-r border-border/60 bg-background flex flex-col md:h-full z-10">
         <Tabs defaultValue="itinerary" className="w-full flex flex-col md:h-full gap-0">
           {/* Header */}
-          <div className="p-5 md:p-6 border-b border-border bg-card md:sticky top-0 z-20">
-            <div className="flex justify-between items-start gap-4 mb-4">
+          <div className="px-5 pt-5 pb-3 md:px-6 md:pt-6 material border-b border-border/50 md:sticky top-0 z-20">
+            <Link href="/trips" className="inline-flex items-center gap-0.5 text-[15px] text-primary mb-3 -ml-1 hover:opacity-70">
+              <ChevronLeft className="w-5 h-5" /> {t("myTrips")}
+            </Link>
+            <div className="flex justify-between items-start gap-4 mb-3">
               <div className="min-w-0">
                 {trip.source === "demo" && (
-                  <Badge variant="outline" className="mb-2 gap-1 text-muted-foreground" title={t("demoPlanHint")}>
-                    <FlaskConical /> {t("demoPlan")}
-                  </Badge>
+                  <span className="inline-flex items-center gap-1 mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-sys-purple" title={t("demoPlanHint")}>
+                    <FlaskConical className="w-3.5 h-3.5" /> {t("demoPlan")}
+                  </span>
                 )}
                 {trip.source === "ai" && (
-                  <Badge variant="outline" className="mb-2 gap-1 text-primary border-primary/30">
-                    <Sparkles /> {t("aiPlan")}
-                  </Badge>
+                  <span className="inline-flex items-center gap-1 mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-primary">
+                    <Sparkles className="w-3.5 h-3.5" /> {t("aiPlan")}
+                  </span>
                 )}
-                <h1 className="text-2xl font-bold tracking-tight mb-1 text-balance">{plan.tripTitle}</h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <h1 className="text-[28px] font-bold leading-tight tracking-tight mb-1 text-balance">{plan.tripTitle}</h1>
+                <p className="text-[15px] text-muted-foreground flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" /> {formatDateRange(input.startDate, input.endDate, language)}
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <span className="text-xs font-medium text-muted-foreground block mb-1">{t("totalEst")}</span>
-                <span className="text-xl font-bold tabular-nums">{money(plan.estimatedBudget.totalEstimated)}</span>
+                <span className="text-[12px] text-muted-foreground block mb-0.5">{t("totalEst")}</span>
+                <span className="text-[22px] font-bold tabular-nums tracking-tight">{money(plan.estimatedBudget.totalEstimated)}</span>
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{plan.summary}</p>
+            <p className="text-[15px] text-muted-foreground mb-4 line-clamp-2">{plan.summary}</p>
 
-            <TabsList className="w-full grid grid-cols-2 mb-4">
+            <TabsList className="w-full grid grid-cols-2 mb-3 bg-secondary">
               <TabsTrigger value="itinerary">{t("itinerary")}</TabsTrigger>
               <TabsTrigger value="budget">{t("budgetTab")}</TabsTrigger>
             </TabsList>
@@ -137,59 +145,65 @@ export default function TripWorkspace({ trip, weather }: { trip: PublicTrip; wea
                 const WeatherIcon = w ? WEATHER_ICONS[w.condition] : null;
                 return (
                   <section key={day.date} aria-labelledby={`day-${d}`}>
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                      <div className="flex items-center gap-3">
-                        <h2 id={`day-${d}`} className="text-lg font-bold">
-                          {t("dayN", { n: d + 1 })}
-                          <span className="text-muted-foreground font-medium"> · {formatDate(day.date, language, { weekday: "short", day: "numeric", month: "short" })}</span>
-                        </h2>
-                        {w && WeatherIcon && (
-                          <Badge
-                            variant="secondary"
-                            className={cn("gap-1.5 font-normal", (w.condition === "rainy" || w.condition === "storm") && "text-sky-600 dark:text-sky-400")}
-                            title={t("rainChance", { p: w.precipitationProbability })}
-                          >
-                            <WeatherIcon /> {w.temperatureMax}° / {w.temperatureMin}°
-                          </Badge>
-                        )}
+                    <div className="flex flex-wrap items-end justify-between gap-2 mb-3 px-1">
+                      <div>
+                        <p className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          {formatDate(day.date, language, { weekday: "long", day: "numeric", month: "long" })}
+                        </p>
+                        <div className="flex items-center gap-2.5">
+                          <h2 id={`day-${d}`} className="text-[22px] font-bold">{t("dayN", { n: d + 1 })}</h2>
+                          {w && WeatherIcon && (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 text-[13px] font-medium",
+                                w.condition === "rainy" || w.condition === "storm" ? "text-sys-blue" : w.condition === "sunny" ? "text-sys-orange" : "text-muted-foreground"
+                              )}
+                              title={t("rainChance", { p: w.precipitationProbability })}
+                            >
+                              <WeatherIcon className="w-4 h-4" /> {w.temperatureMax}° <span className="text-muted-foreground">{w.temperatureMin}°</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 text-[12px] text-muted-foreground pb-1">
                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {day.city}</span>
                         <span className="flex items-center gap-1"><Footprints className="w-3 h-3" /> {t("km", { n: day.walkingDistanceKm })}</span>
                         <span className="tabular-nums">{money(day.estimatedDailyCost)}</span>
                       </div>
                     </div>
 
-                    <ol className="relative space-y-3 before:absolute before:left-[4.1rem] before:top-2 before:bottom-2 before:w-px before:bg-border">
+                    <ol className="grouped">
                       {day.activities.map((act, i) => {
                         const id = `${d}-${i}`;
                         const Icon = CATEGORY_ICONS[act.category] ?? CircleDot;
                         return (
-                          <li key={id} id={`activity-${id}`} className="flex gap-3 items-start scroll-mt-24">
-                            <div className="w-12 pt-3.5 text-xs font-bold text-muted-foreground text-right tabular-nums shrink-0">{act.recommendedStartTime}</div>
-                            <div className={cn("relative z-10 mt-3 size-4 rounded-full border-2 bg-background shrink-0", focusId === id ? "border-primary bg-primary" : "border-border")} />
+                          <li key={id} id={`activity-${id}`} className="scroll-mt-40">
                             <button
                               type="button"
                               onClick={() => setFocusId(id)}
+                              aria-pressed={focusId === id}
                               className={cn(
-                                "flex-1 min-w-0 text-left bg-card border p-4 rounded-xl transition-colors shadow-sm",
-                                focusId === id ? "border-primary/70 ring-2 ring-primary/20" : "border-border hover:border-primary/40"
+                                "grouped-row w-full text-left items-start py-3 transition-colors",
+                                focusId === id ? "bg-primary/8 dark:bg-primary/15" : "hover:bg-secondary/60"
                               )}
                             >
-                              <div className="flex justify-between items-start gap-3 mb-1.5">
-                                <h3 className="font-semibold text-sm leading-tight">{act.name}</h3>
-                                <Badge variant="outline" className="text-[10px] uppercase tracking-wider gap-1 shrink-0">
-                                  <Icon /> {t(`cat${act.category}`)}
-                                </Badge>
-                              </div>
-                              {act.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{act.description}</p>}
-                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                              <span className={cn("size-[34px] rounded-[9px] flex items-center justify-center text-white shrink-0 mt-0.5", CATEGORY_COLORS[act.category] ?? "bg-sys-gray")}>
+                                <Icon className="w-[18px] h-[18px]" strokeWidth={2.1} />
+                              </span>
+                              <span className="flex-1 min-w-0">
+                                <span className="flex justify-between items-baseline gap-3">
+                                  <span className="font-semibold text-[15px] leading-snug">{act.name}</span>
+                                  <span className="text-[13px] text-muted-foreground tabular-nums shrink-0">{act.recommendedStartTime}</span>
+                                </span>
+                                {act.description && <span className="block text-[13px] text-muted-foreground mt-0.5 line-clamp-2">{act.description}</span>}
+                                <span className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-tertiary-foreground">
                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDuration(act.durationMinutes, t)}</span>
                                 <span className="tabular-nums">{act.estimatedCost > 0 ? money(act.estimatedCost) : t("free")}</span>
                                 {act.distanceKm !== undefined && (
                                   <span className="flex items-center gap-1"><Footprints className="w-3 h-3" /> {t("km", { n: act.distanceKm })}</span>
                                 )}
-                              </div>
+                                </span>
+                              </span>
                             </button>
                           </li>
                         );
@@ -199,14 +213,14 @@ export default function TripWorkspace({ trip, weather }: { trip: PublicTrip; wea
                 );
               })}
 
-              <div className="pt-2 border-t border-border flex justify-end">
+              <div className="grouped">
                 <button
                   type="button"
                   onClick={handleDelete}
                   disabled={deleting}
-                  className={buttonVariants({ variant: "destructive", size: "sm", className: "gap-1.5" })}
+                  className="grouped-row w-full justify-center text-[17px] text-destructive hover:bg-secondary/60 transition-colors disabled:opacity-50"
                 >
-                  <Trash2 /> {t("deleteTrip")}
+                  <Trash2 className="w-4 h-4" /> {t("deleteTrip")}
                 </button>
               </div>
             </TabsContent>
@@ -226,7 +240,7 @@ export default function TripWorkspace({ trip, weather }: { trip: PublicTrip; wea
         <div className="absolute bottom-8 right-8">
           <Link
             href={`/trips/${trip.id}/travel`}
-            className={buttonVariants({ size: "lg", className: "rounded-full shadow-2xl h-14 px-8 text-base font-semibold gap-2" })}
+            className={buttonVariants({ size: "lg", className: "shadow-float h-12 px-6 font-semibold" })}
           >
             <Navigation className="w-5 h-5" /> {t("travelMode")}
           </Link>
@@ -236,7 +250,7 @@ export default function TripWorkspace({ trip, weather }: { trip: PublicTrip; wea
       {/* Mobile travel mode button */}
       <Link
         href={`/trips/${trip.id}/travel`}
-        className={buttonVariants({ size: "lg", className: "md:hidden fixed bottom-20 right-4 z-30 rounded-full shadow-2xl h-12 px-5 gap-2" })}
+        className={buttonVariants({ size: "lg", className: "md:hidden fixed bottom-[calc(64px+env(safe-area-inset-bottom))] right-4 z-30 shadow-float font-semibold" })}
       >
         <Navigation className="w-4 h-4" /> {t("travelMode")}
       </Link>
@@ -264,8 +278,8 @@ function DayChip({ active, onClick, children }: { active: boolean; onClick: () =
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        active ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+        "whitespace-nowrap rounded-full h-8 px-3.5 text-[13px] font-medium transition-colors",
+        active ? "bg-foreground text-background" : "bg-secondary text-foreground/80 hover:text-foreground"
       )}
     >
       {children}

@@ -26,7 +26,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={t("toggleTheme")}
       title={t("toggleTheme")}
       className={cn(
-        "inline-flex items-center justify-center size-8 rounded-full border border-border bg-secondary/80 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",
+        "inline-flex items-center justify-center size-8 rounded-full bg-secondary text-foreground/80 hover:text-foreground transition-colors",
         className
       )}
     >

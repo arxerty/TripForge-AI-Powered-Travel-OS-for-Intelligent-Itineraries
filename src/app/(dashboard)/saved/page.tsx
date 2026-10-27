@@ -1,85 +1,65 @@
-import { Heart, Search, MapPin, MoreHorizontal, ArrowUpRight, FolderOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Heart, Search, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { getServerT } from "@/lib/i18n/server";
 
-export default function SavedPage() {
+export default async function SavedPage() {
+  const t = await getServerT();
   const savedItems = [
-    { name: "Udon Shin", location: "Tokyo, Japan", type: "Restaurant", added: "2 days ago", image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=500&q=80" },
-    { name: "Banff National Park", location: "Alberta, Canada", type: "Destination", added: "1 week ago", image: "https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=500&q=80" },
-    { name: "Villa Cimbrone Gardens", location: "Ravello, Italy", type: "Attraction", added: "2 weeks ago", image: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=500&q=80" },
-    { name: "Omoide Yokocho", location: "Tokyo, Japan", type: "Attraction", added: "1 month ago", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=500&q=80" },
+    { name: "Udon Shin", location: "Tokyo, Japan", type: "savedRestaurant", image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=500&q=80" },
+    { name: "Banff National Park", location: "Alberta, Canada", type: "savedDestination", image: "https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=500&q=80" },
+    { name: "Villa Cimbrone Gardens", location: "Ravello, Italy", type: "savedAttraction", image: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=500&q=80" },
+    { name: "Omoide Yokocho", location: "Tokyo, Japan", type: "savedAttraction", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=500&q=80" },
   ];
+  const filters = ["savedAll", "savedDestination", "savedRestaurant", "savedAttraction", "savedHotel"];
 
   return (
-    <div className="flex-1 p-6 md:p-10 overflow-auto">
-      <div className="max-w-6xl mx-auto space-y-10">
-        
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
-              <Heart className="w-8 h-8 text-primary fill-primary/20" /> Saved Places
-            </h1>
-            <p className="text-muted-foreground text-lg">Your personal collection of inspiration.</p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" className="gap-2">
-              <FolderOpen className="w-4 h-4" /> New Collection
-            </Button>
-          </div>
+    <div className="flex-1 overflow-auto px-5 py-6 md:px-10 md:py-10">
+      <div className="max-w-5xl mx-auto space-y-8">
+
+        <header>
+          <h1 className="large-title">{t("savedPlaces")}</h1>
+          <p className="text-muted-foreground text-[17px] mt-1">{t("savedSubtitle")}</p>
         </header>
 
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search saved places..." className="pl-9 h-11 bg-card" />
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-tertiary-foreground" />
+            <Input placeholder={t("savedSearch")} aria-label={t("savedSearch")} className="pl-10 bg-card shadow-card" />
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-            {["All", "Destinations", "Restaurants", "Attractions", "Hotels"].map((filter, i) => (
-              <Badge 
-                key={filter} 
-                variant={i === 0 ? "default" : "outline"}
-                className="px-4 py-2 rounded-lg cursor-pointer hover:bg-secondary whitespace-nowrap"
+          {/* Segmented filter */}
+          <div className="inline-flex p-0.5 rounded-[9px] bg-secondary overflow-x-auto scrollbar-hide" role="tablist">
+            {filters.map((f, i) => (
+              <span
+                key={f}
+                role="tab"
+                aria-selected={i === 0}
+                className={`h-8 px-3.5 inline-flex items-center rounded-[7px] text-[13px] font-semibold whitespace-nowrap ${
+                  i === 0 ? "bg-segment shadow-[0_3px_8px_rgb(0_0_0/0.12)]" : "text-muted-foreground"
+                }`}
               >
-                {filter}
-              </Badge>
+                {t(f)}
+              </span>
             ))}
           </div>
         </div>
 
-        {/* Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {savedItems.map((item, i) => (
-            <Card key={i} className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-colors cursor-pointer flex flex-col">
-              <div className="h-48 relative overflow-hidden bg-secondary">
-                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${item.image})` }}></div>
-                <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-md rounded-full p-2 text-primary hover:bg-background transition-colors">
-                  <Heart className="w-4 h-4 fill-primary" />
-                </div>
-                <div className="absolute bottom-3 left-3">
-                  <Badge variant="secondary" className="backdrop-blur-md bg-background/80 font-medium">
-                    {item.type}
-                  </Badge>
-                </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {savedItems.map((item) => (
+            <article key={item.name} className="group overflow-hidden rounded-2xl bg-card shadow-card">
+              <div className="aspect-square relative overflow-hidden">
+                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${item.image})` }} />
+                <span className="absolute top-2.5 right-2.5 size-8 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-sys-pink fill-sys-pink" />
+                </span>
               </div>
-              <CardContent className="p-4 flex-1 flex flex-col">
-                <h3 className="font-bold text-lg leading-tight mb-1 group-hover:text-primary transition-colors flex items-center gap-2">
-                  {item.name} <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4">
-                  <MapPin className="w-3 h-3" /> {item.location}
+              <div className="p-3.5">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">{t(item.type)}</p>
+                <h3 className="font-semibold text-[15px] leading-tight truncate">{item.name}</h3>
+                <p className="text-[13px] text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                  <MapPin className="w-3 h-3 shrink-0" /> {item.location}
                 </p>
-                <div className="mt-auto flex justify-between items-center pt-4 border-t border-border">
-                  <span className="text-xs text-muted-foreground">Added {item.added}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </article>
           ))}
         </div>
 

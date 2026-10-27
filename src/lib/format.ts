@@ -37,5 +37,5 @@ export function coverGradient(seed: string) {
   let h = 0;
   for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const hue = h % 360;
-  return `linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 50) % 360} 75% 30%))`;
+  return `linear-gradient(160deg, hsl(${hue} 85% 64%) 0%, hsl(${(hue + 32) % 360} 78% 46%) 100%)`;
 }

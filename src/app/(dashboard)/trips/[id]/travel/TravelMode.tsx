@@ -5,12 +5,10 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, Navigation, Clock, ChevronLeft, ChevronRight, Map as MapIcon, CircleDot } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { CATEGORY_ICONS } from "../TripWorkspace";
+import { CATEGORY_COLORS, CATEGORY_ICONS } from "../TripWorkspace";
 import { useI18n } from "@/lib/i18n/context";
 import { coverGradient, daysUntil, formatDate, formatDuration } from "@/lib/format";
 import type { PublicTrip } from "@/lib/trips/types";
-import { cn } from "@/lib/utils";
 
 const toMinutes = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -117,9 +115,9 @@ export default function TravelMode({ trip }: { trip: PublicTrip }) {
       <div className="flex-1 px-5 pt-6 pb-10 space-y-7">
 
         {/* Status & Time */}
-        <div className="bg-accent border border-primary/20 rounded-2xl p-4 flex items-center justify-between">
+        <div className="grouped p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-primary">
+            <div className="size-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
             <div>
@@ -132,10 +130,10 @@ export default function TravelMode({ trip }: { trip: PublicTrip }) {
             </div>
           </div>
           <div className="flex gap-1">
-            <button type="button" onClick={() => step(-1)} disabled={flatPos <= 0} aria-label={t("previous")} className="size-9 rounded-full hover:bg-background/60 flex items-center justify-center disabled:opacity-30">
+            <button type="button" onClick={() => step(-1)} disabled={flatPos <= 0} aria-label={t("previous")} className="size-9 rounded-full bg-secondary text-primary flex items-center justify-center disabled:opacity-30">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button type="button" onClick={() => step(1)} disabled={flatPos >= flat.length - 1} aria-label={t("nextUp")} className="size-9 rounded-full hover:bg-background/60 flex items-center justify-center disabled:opacity-30">
+            <button type="button" onClick={() => step(1)} disabled={flatPos >= flat.length - 1} aria-label={t("nextUp")} className="size-9 rounded-full bg-secondary text-primary flex items-center justify-center disabled:opacity-30">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -147,52 +145,49 @@ export default function TravelMode({ trip }: { trip: PublicTrip }) {
             href={`https://www.google.com/maps/dir/?api=1&destination=${dest}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={buttonVariants({ variant: "secondary", className: "h-16 flex-col gap-1 rounded-2xl" })}
+            className="h-[68px] flex flex-col items-center justify-center gap-1 rounded-2xl bg-primary text-primary-foreground active:scale-[0.97] transition"
           >
             <Navigation className="w-5 h-5" />
-            <span className="text-xs">{t("navigate")}</span>
+            <span className="text-[13px] font-semibold">{t("navigate")}</span>
           </a>
           <a
             href={`https://maps.apple.com/?daddr=${dest}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={buttonVariants({ variant: "secondary", className: "h-16 flex-col gap-1 rounded-2xl" })}
+            className="h-[68px] flex flex-col items-center justify-center gap-1 rounded-2xl bg-card shadow-card text-primary active:scale-[0.97] transition"
           >
             <MapIcon className="w-5 h-5" />
-            <span className="text-xs">{t("appleMaps")}</span>
+            <span className="text-[13px] font-semibold">{t("appleMaps")}</span>
           </a>
         </div>
 
         {/* Notes */}
         {current.description && (
-          <div>
-            <h3 className="font-semibold mb-3">{t("aiNotes")}</h3>
-            <Card className="bg-card border-border">
-              <CardContent className="text-sm text-muted-foreground leading-relaxed">{current.description}</CardContent>
-            </Card>
-          </div>
+          <section>
+            <h3 className="px-4 mb-1.5 text-[13px] uppercase tracking-wide text-muted-foreground">{t("aiNotes")}</h3>
+            <div className="grouped px-4 py-3 text-[15px] leading-relaxed">{current.description}</div>
+          </section>
         )}
 
         {/* Next Up */}
         {next && (
-          <div>
-            <h3 className="font-semibold mb-3 text-muted-foreground">{t("nextUp")} ({next.recommendedStartTime})</h3>
-            <button type="button" onClick={() => step(1)} className="w-full text-left">
-              <Card className="bg-secondary/50 border-border shadow-none hover:bg-secondary transition-colors">
-                <CardContent className="flex items-center gap-4">
-                  <NextIcon category={next.category} />
-                  <div className="min-w-0">
-                    <p className="font-semibold truncate">{next.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatDuration(next.durationMinutes, t)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </button>
-          </div>
+          <section>
+            <h3 className="px-4 mb-1.5 text-[13px] uppercase tracking-wide text-muted-foreground">{t("nextUp")} · {next.recommendedStartTime}</h3>
+            <div className="grouped">
+              <button type="button" onClick={() => step(1)} className="grouped-row w-full text-left hover:bg-secondary/60 transition-colors">
+                <NextIcon category={next.category} />
+                <span className="flex-1 min-w-0">
+                  <span className="block font-semibold text-[15px] truncate">{next.name}</span>
+                  <span className="block text-[13px] text-muted-foreground">{formatDuration(next.durationMinutes, t)}</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-tertiary-foreground" />
+              </button>
+            </div>
+          </section>
         )}
 
         {override && live && (
-          <button type="button" onClick={() => setOverride(null)} className={cn(buttonVariants({ variant: "outline", className: "w-full" }))}>
+          <button type="button" onClick={() => setOverride(null)} className={buttonVariants({ variant: "tinted", size: "lg", className: "w-full" })}>
             {t("backToNow")}
           </button>
         )}
@@ -204,8 +199,8 @@ export default function TravelMode({ trip }: { trip: PublicTrip }) {
 function NextIcon({ category }: { category: string }) {
   const Icon = CATEGORY_ICONS[category] ?? CircleDot;
   return (
-    <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border shrink-0">
-      <Icon className="w-4 h-4 text-muted-foreground" />
+    <div className={`size-[34px] rounded-[9px] flex items-center justify-center text-white shrink-0 ${CATEGORY_COLORS[category] ?? "bg-sys-gray"}`}>
+      <Icon className="w-[18px] h-[18px]" />
     </div>
   );
 }

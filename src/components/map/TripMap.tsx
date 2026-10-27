@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Layers, Check } from "lucide-react";
+import { Layers } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 
 export interface MarkerData {
@@ -83,8 +83,8 @@ function MapboxMap({ markers = [], interactive = true, provider = "mapbox", focu
       el.setAttribute("aria-label", marker.title ?? "");
       el.className =
         currentProvider === "apple"
-          ? "size-7 rounded-full bg-sky-500 text-white text-xs font-bold border-2 border-white shadow-[0_0_12px_rgba(56,189,248,0.8)] cursor-pointer"
-          : "size-7 rounded-full bg-primary text-primary-foreground text-xs font-bold border-2 border-background shadow-lg cursor-pointer";
+          ? "size-7 rounded-full bg-sys-red text-white text-xs font-bold border-2 border-white shadow-lg cursor-pointer"
+          : "size-7 rounded-full bg-primary text-primary-foreground text-xs font-bold border-2 border-white shadow-lg cursor-pointer";
       el.addEventListener("click", () => onMarkerClick?.(marker.id));
 
       const mk = new mapboxgl.Marker({ element: el })
@@ -117,22 +117,18 @@ function MapboxMap({ markers = [], interactive = true, provider = "mapbox", focu
       <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
       {/* Map Provider Selector Toolbar */}
-      <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-card/80 backdrop-blur-md p-1.5 rounded-full border border-border/80 shadow-xl">
-        <div className="px-2.5 py-1 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-primary" />
-          <span className="hidden sm:inline">{t("mapProvider")}:</span>
-        </div>
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-1 material-thick p-0.5 rounded-[9px] shadow-float" role="radiogroup" aria-label={t("mapProvider")}>
+        <Layers className="w-3.5 h-3.5 text-muted-foreground mx-2" aria-hidden />
         {(["mapbox", "apple"] as const).map((p) => (
           <button
             key={p}
+            role="radio"
+            aria-checked={currentProvider === p}
             onClick={() => setCurrentProvider(p)}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center gap-1 ${
-              currentProvider === p
-                ? p === "apple" ? "bg-sky-500 text-white font-bold shadow-md" : "bg-primary text-primary-foreground font-bold shadow-md"
-                : "hover:bg-secondary text-muted-foreground"
+            className={`h-7 px-3 text-[12px] font-semibold rounded-[7px] transition-all ${
+              currentProvider === p ? "bg-segment text-foreground shadow-[0_3px_8px_rgb(0_0_0/0.12)]" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {currentProvider === p && <Check className="w-3 h-3" />}
             {p === "apple" ? t("appleMaps") : t("mapbox")}
           </button>
         ))}
@@ -160,7 +156,7 @@ function OsmFallbackMap({ markers = [], focusId }: TripMapProps) {
   return (
     <div className="absolute inset-0">
       <iframe key={src} title={t("mapTitle")} src={src} className="w-full h-full border-0" />
-      <div className="hidden md:block absolute top-3 left-3 max-w-[calc(100%-4rem)] rounded-lg bg-card/90 backdrop-blur-md border border-border px-2.5 py-1 text-[11px] text-muted-foreground shadow">
+      <div className="hidden md:block absolute top-3 left-3 max-w-[calc(100%-4rem)] rounded-lg material-thick px-2.5 py-1 text-[11px] text-muted-foreground shadow-float">
         {t("mapFallbackNote")}
       </div>
     </div>
